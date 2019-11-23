@@ -1,0 +1,13 @@
+  
+{
+    "name": "Ivanqi/LogSdk",
+    "require": {
+        "php": ">=7"
+    },
+    "autoload": {
+        "psr-4": {
+            "LogSdk\\": "src"
+        }
+    }
+}
+    
