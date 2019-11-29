@@ -27,7 +27,7 @@ class TcpClient implements ClientInterface
     }
 
 
-    public function connect(string $ip, int $port, int $mode = 0): TcpClient
+    public function connect(string $ip, int $port, int $mode = 0): self
     {
         if (empty($ip)) {
             throw new TcpClientException(TcpClientException::IP_IS_EMPTY);
@@ -50,7 +50,7 @@ class TcpClient implements ClientInterface
         return $url;
     }
 
-    private function createClientStream(): resource
+    private function createClientStream()
     {
         // 创建上下文
         $context = @stream_context_create();
@@ -87,13 +87,17 @@ class TcpClient implements ClientInterface
         if (empty($request)) {
             throw new TcpClientException(TcpClientException::DATA_IS_EMPTY);
         }
-        $request = Protocol::_deProtocol($request);
+        $request = Protocol::_encryption($request, $this->sign);
         // stream_socket_sendto 向Socket发送数据，不管其连接与否
-        @stream_socket_sendto($this->clientStream, $request . $this->eof);
+        $request = $request . $this->eof;
+        if (empty($request)) {
+            throw new TcpClientException(TcpClientException::DATA_IS_EMPTY);
+        }
+        @stream_socket_sendto($this->clientStream, $request);
         return true;
     }
 
-    public function recv(int $length): string
+    public function recv(int $length): array
     {
         $result = '';
         $info = stream_get_meta_data($this->clientStream);
@@ -101,13 +105,12 @@ class TcpClient implements ClientInterface
 
         while (!$info['timed_out'] && !feof($this->clientStream)) {
             $tmp = stream_socket_recvfrom($this->clientStream, $length);
-
-            if ($pos = strpos($tmp, $this->eof)) {
+            if (!empty($tmp) && $pos = strpos($tmp, $this->eof)) {
                 $result .= substr($tmp, 0, $pos);
                 break;
             } else {
                 $result .= $tmp;
-                if (mb_strlen($request, 'ASCII') == $length) {
+                if (mb_strlen($result, 'ASCII') == $length) {
                     break;
                 }
             }
@@ -120,6 +123,19 @@ class TcpClient implements ClientInterface
         if ($info['timed_out']) {
             throw new TcpClientException(TcpClientException::RECV_TIMEOUT);
         }
+        $result = Protocol::_ecrypt($result, $this->sign);
+        if (empty($result)) {
+            throw new TcpClientException(TcpClientException::DATA_IS_EMPTY);
+        }
         return $result;
+    }
+
+    public function close()
+    {
+        return fclose($this->clientStream);
+    }
+
+    public function __destruct() {
+        $this->close();
     }
 }

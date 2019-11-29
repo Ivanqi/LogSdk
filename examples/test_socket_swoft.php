@@ -52,7 +52,7 @@ class TestSocketSwoft
                 echo "发送数据失败";
                 die;
             } else {
-                $msg = $fp->recv(1024);
+                $msg = $client->recv(1024);
             }
 
             print_r($msg);

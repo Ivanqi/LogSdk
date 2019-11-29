@@ -4,20 +4,24 @@ namespace LogSdk\Protocol;
 class SwoftJsonProtocol
 {
     const DEFAULT_CMD = 'receive';
-    public function _deProtocol(array $request, string $sign): string
+    public static function _encryption(array $request, string $sign): string
     {
         $time = time();
-        $data['sign'] = static::getSign($request, $time, $sign);
-        $data['time'] = $time;
-
+        $request['sign'] = self::getSign($request, $time, $sign);
+        $request['time'] = $time;
         $req = [
             'cmd' => self::DEFAULT_CMD,
-            'data' => $data,
+            'data' => $request,
             'ext' => []
         ];
 
         $req = json_encode($req);
         return $req;
+    }
+
+    public static function _ecrypt($request)
+    {
+        return json_decode($request, true);
     }
 
     private static function getSign(array $data, int $time, string $sign)
