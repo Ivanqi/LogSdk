@@ -7,7 +7,8 @@ use LogSdk\Protocol\Protocol;
 class TcpClient implements ClientInterface 
 {
     const EOF = "\r\n\r\n";
-    public  $keepAlive = true;
+    public $keepAlive = true;
+    public $noDelay = true;
 
     // 1024 * 8 缓存区 = 8kb
     public $readBuffer = 8192;
