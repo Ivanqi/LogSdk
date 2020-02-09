@@ -124,7 +124,7 @@ class TcpClient implements ClientInterface
         if ($info['timed_out']) {
             throw new TcpClientException(TcpClientException::RECV_TIMEOUT);
         }
-        $result = Protocol::_ecrypt($result, $this->sign);
+        $result = Protocol::_decrypt($result, $this->sign);
         if (empty($result)) {
             throw new TcpClientException(TcpClientException::DATA_IS_EMPTY);
         }

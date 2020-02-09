@@ -19,7 +19,7 @@ class SwoftJsonProtocol
         return $req;
     }
 
-    public static function _ecrypt($request)
+    public static function _decrypt($request)
     {
         return json_decode($request, true);
     }

@@ -14,15 +14,17 @@ class Protocol
         self::$mode = $mode;
         self::$sign = $sign;
         self::$funcName = __FUNCTION__;
-        return self::switchFunc($request);
+        $ret = self::switchFunc($request);
+        return is_null($ret) ? [] : $ret;
     }
 
-    public static function _ecrypt(string $result, $mode = self::SWOFT_JSON_PROTOCOL): array
+    public static function _decrypt(string $result, $mode = self::SWOFT_JSON_PROTOCOL): array
     {
         self::$mode = $mode;
         self::$sign = '';
         self::$funcName = __FUNCTION__;
-        return self::switchFunc($result);
+        $ret =  self::switchFunc($result);
+        return is_null($ret) ? [] : $ret;
     }
 
     private static function switchFunc($request)
