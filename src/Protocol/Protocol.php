@@ -5,11 +5,14 @@ use LogSdk\Protocol\SwoftJsonProtocol;
 class Protocol
 {
     const SWOFT_JSON_PROTOCOL = 'SwoftJsonProtocol';
+    const SWOFT_PHP_PROTOCOL = 'SwoftPhpProtocol';
+
     private static $mode;
     private static $sign = '';
     private static $funcName;
+    private static $composer = false;
 
-    public static function _encryption(array $request, string $sign, $mode = self::SWOFT_JSON_PROTOCOL): string
+    public static function _encryption(array $request, string $sign, $mode = self::SWOFT_JSON_PROTOCOL, $composer = false): string
     {
         self::$mode = $mode;
         self::$sign = $sign;
@@ -31,13 +34,15 @@ class Protocol
     {
         switch (self::$mode) {
             case self::SWOFT_JSON_PROTOCOL:
-                return self::swoftJsonProtocol($request, self::$sign);
+                return self::swoftJsonProtocol($request, self::$sign, self::$composer);
+            case self::SWOFT_PHP_PROTOCOL:
+                return self::swoftPhpProtocol($request, self::$sign, self::$composer);
             default:
-                return self::swoftJsonProtocol($request, self::$sign);    
+                return self::swoftJsonProtocol($request, self::$sign, self::$composer);    
         }
     }
 
-    public static function swoftJsonProtocol($request, string $sign)
+    public static function swoftJsonProtocol($request, string $sign, bool $composer)
     {
         if (method_exists(SwoftJsonProtocol::class, self::$funcName)) {
             $args = [];
@@ -46,5 +51,16 @@ class Protocol
             return $result;
         }
         return NULL;
-    }    
+    }
+    
+    public static function swoftPhpProtocol($request, string $sign, bool $composer)
+    {
+        if (method_exists(SwoftPhpProtocol::class, self::$funcName)) {
+            $args = [];
+            array_push($args, $request, $sign, $composer);
+            $result =  call_user_func_array([SwoftPhpProtocol::class, self::$funcName], $args);
+            return $result;
+        }
+        return NULL;
+    }
 }

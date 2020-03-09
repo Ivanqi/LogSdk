@@ -3,6 +3,7 @@ require_once "../vendor/autoload.php";
 
 use LogSdk\TcpClient;
 use LogSdk\Exception\TcpClientException;
+use LogSdk\Protocol\Protocol;
 
 
 $data = [
@@ -36,16 +37,15 @@ class TestSocketSwoft
     public static function start($ip, $port, $data) 
     {
         if (empty($ip) || empty($port)) {
-            echo "ip or port is empty.";
+            echo "ip or port is empty.\n";
             die;
         }
         try {
-            $client = new TcpClient(self::SIGN);
+            $client = new TcpClient(self::SIGN, Protocol::SWOFT_PHP_PROTOCOL);
             if (!$client->connect($ip, (int) $port)) {
                 echo "连接失败";
                 die;
             }
-
             $ret = $client->send($data);
 
             if (!$ret) {

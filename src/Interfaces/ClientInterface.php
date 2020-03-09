@@ -4,5 +4,5 @@ namespace LogSdk\Interfaces;
 interface ClientInterface {
     public function send(array $request);
     public function recv(int $length);
-    public function connect(string $url, int $port, int $mode = 0);
+    public function connect(string $url, int $port, bool $compress = false);
 }

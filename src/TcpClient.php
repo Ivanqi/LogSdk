@@ -20,15 +20,18 @@ class TcpClient implements ClientInterface
     private $sign;
     private $tcpPrefix = 'tcp://';
     private $eof = '';
+    private $mode = '';
+    private $compress = false;
 
-    public function __construct($sign = '', $eof = self::EOF)
+    public function __construct($sign = '', $mode = Protocol::SWOFT_JSON_PROTOCOL, $eof = self::EOF)
     {
         $this->sign = $sign;
         $this->eof = $eof;
+        $this->mode = $mode;
     }
 
 
-    public function connect(string $ip, int $port, int $mode = 0): self
+    public function connect(string $ip, int $port, bool $compress = false): self
     {
         if (empty($ip)) {
             throw new TcpClientException(TcpClientException::IP_IS_EMPTY);
@@ -40,6 +43,7 @@ class TcpClient implements ClientInterface
 
         $this->ip = $ip;
         $this->port = $port;
+        $this->compress = $compress;
 
         $this->clientStream = $this->createClientStream();
         return $this;
@@ -88,7 +92,7 @@ class TcpClient implements ClientInterface
         if (empty($request)) {
             throw new TcpClientException(TcpClientException::DATA_IS_EMPTY);
         }
-        $request = Protocol::_encryption($request, $this->sign);
+        $request = Protocol::_encryption($request, $this->sign, $this->mode);
         // stream_socket_sendto 向Socket发送数据，不管其连接与否
         $request = $request . $this->eof;
         if (empty($request)) {
@@ -124,7 +128,7 @@ class TcpClient implements ClientInterface
         if ($info['timed_out']) {
             throw new TcpClientException(TcpClientException::RECV_TIMEOUT);
         }
-        $result = Protocol::_decrypt($result, $this->sign);
+        $result = Protocol::_decrypt($result, $this->sign, $this->mode);
         if (empty($result)) {
             throw new TcpClientException(TcpClientException::DATA_IS_EMPTY);
         }
