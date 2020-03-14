@@ -42,7 +42,7 @@ class TestSocketSwoft
         }
         try {
             $client = new TcpClient(self::SIGN, Protocol::SWOFT_PHP_PROTOCOL);
-            if (!$client->connect($ip, (int) $port)) {
+            if (!$client->connect($ip, (int) $port, true)) {
                 echo "连接失败";
                 die;
             }

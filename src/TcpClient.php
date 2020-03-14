@@ -92,7 +92,12 @@ class TcpClient implements ClientInterface
         if (empty($request)) {
             throw new TcpClientException(TcpClientException::DATA_IS_EMPTY);
         }
-        $request = Protocol::_encryption($request, $this->sign, $this->mode);
+        $request = Protocol::_encryption([
+            'request' => $request, 
+            'sign' => $this->sign, 
+            'mode' => $this->mode, 
+            'compress' => $this->compress
+            ]);
         // stream_socket_sendto 向Socket发送数据，不管其连接与否
         $request = $request . $this->eof;
         if (empty($request)) {
@@ -128,7 +133,7 @@ class TcpClient implements ClientInterface
         if ($info['timed_out']) {
             throw new TcpClientException(TcpClientException::RECV_TIMEOUT);
         }
-        $result = Protocol::_decrypt($result, $this->sign, $this->mode);
+        $result = Protocol::_decrypt($result, $this->mode);
         if (empty($result)) {
             throw new TcpClientException(TcpClientException::DATA_IS_EMPTY);
         }

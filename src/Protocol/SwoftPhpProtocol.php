@@ -4,12 +4,12 @@ namespace LogSdk\Protocol;
 class SwoftPhpProtocol
 {
     const DEFAULT_CMD = 'receive';
-    public static function _encryption(array $request, string $sign, bool $compoesr = false): string
+    public static function _encryption(array $request, string $sign, bool $compress = false): string
     {
         $time = time();
         $request['sign'] = self::getSign($request, $time, $sign);
         $request['time'] = $time;
-        if ($compoesr) {
+        if ($compress) {
             $request = gzcompress(serialize($request));
         }
         $req = [
@@ -24,7 +24,7 @@ class SwoftPhpProtocol
 
     public static function _decrypt($request)
     {
-        return unserialize($request, true);
+        return unserialize($request);
     }
 
     private static function getSign(array $data, int $time, string $sign)

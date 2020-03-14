@@ -10,12 +10,15 @@ class Protocol
     private static $mode;
     private static $sign = '';
     private static $funcName;
-    private static $composer = false;
+    private static $compress = false;
 
-    public static function _encryption(array $request, string $sign, $mode = self::SWOFT_JSON_PROTOCOL, $composer = false): string
+    public static function _encryption(array $data): string
     {
-        self::$mode = $mode;
-        self::$sign = $sign;
+        $request = self::arrayGet($data, 'request', []);
+
+        self::$compress = self::arrayGet($data, 'compress', false);
+        self::$mode = self::arrayGet($data, 'mode', self::SWOFT_JSON_PROTOCOL);
+        self::$sign = self::arrayGet($data, 'sign', '');
         self::$funcName = __FUNCTION__;
         $ret = self::switchFunc($request);
         return is_null($ret) ? [] : $ret;
@@ -34,15 +37,15 @@ class Protocol
     {
         switch (self::$mode) {
             case self::SWOFT_JSON_PROTOCOL:
-                return self::swoftJsonProtocol($request, self::$sign, self::$composer);
+                return self::swoftJsonProtocol($request, self::$sign, self::$compress);
             case self::SWOFT_PHP_PROTOCOL:
-                return self::swoftPhpProtocol($request, self::$sign, self::$composer);
+                return self::swoftPhpProtocol($request, self::$sign, self::$compress);
             default:
-                return self::swoftJsonProtocol($request, self::$sign, self::$composer);    
+                return self::swoftJsonProtocol($request, self::$sign, self::$compress);    
         }
     }
 
-    public static function swoftJsonProtocol($request, string $sign, bool $composer)
+    public static function swoftJsonProtocol($request, string $sign, bool $compress)
     {
         if (method_exists(SwoftJsonProtocol::class, self::$funcName)) {
             $args = [];
@@ -53,14 +56,28 @@ class Protocol
         return NULL;
     }
     
-    public static function swoftPhpProtocol($request, string $sign, bool $composer)
+    public static function swoftPhpProtocol($request, string $sign, bool $compress)
     {
         if (method_exists(SwoftPhpProtocol::class, self::$funcName)) {
             $args = [];
-            array_push($args, $request, $sign, $composer);
+            array_push($args, $request, $sign, $compress);
             $result =  call_user_func_array([SwoftPhpProtocol::class, self::$funcName], $args);
             return $result;
         }
         return NULL;
+    }
+
+    private function arrayGet($array, $key, $default = null)
+    {
+        $key = explode('.', $key);
+        $data = $array;
+        foreach ($key as $k) {
+            if (is_array($data) && array_key_exists($k, $data)) {
+                $data = $data[$k];
+            } else {
+                return $default;
+            }
+        }
+        return $data;
     }
 }
